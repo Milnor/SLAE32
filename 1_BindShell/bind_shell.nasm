@@ -5,7 +5,14 @@ _start:
 
 	; 359 socket(AF_INET, SOCK_STREAM, 0); 
 	; 	or do I need 102 (socketcall) on 32-bit? 
-
+    xor eax, eax
+    mov ax, 359     ; 359 = socket
+    xor ebx, ebx
+    mov bl, 2       ; 2 = AF_INET
+    xor ecx, ecx    
+    inc ecx         ; 1 = SOCK_STREAM
+    xor edx, edx    ; 0
+    int 0x80 
 
 	; sockaddr struct
 	;	sin_family = AF_INET
@@ -24,4 +31,8 @@ _start:
 
 	; cleanup code...
 	
-	
+    ; clean exit
+	xor eax, eax    
+    inc al          ; 1 = exit
+    xor ebx, ebx    ; 0 = return SUCCESS
+    int 0x80
