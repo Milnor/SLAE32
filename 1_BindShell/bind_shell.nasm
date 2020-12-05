@@ -14,12 +14,38 @@ _start:
     xor edx, edx    ; 0
     int 0x80 
 
-	; sockaddr struct
-	;	sin_family = AF_INET
+    ; store the fd returned in eax
+    mov ebx, eax
+
+	; sockaddr struct, built on the stack
 	;	sin_port = htons(SOMEPORT)
-	;	sin_addr.s_addr = htonl(INADDR_ANY)
+
+    ;	sin_addr.s_addr = htonl(INADDR_ANY)
+    ;xor eax, eax
+    ;inc eax         ; eax = 0x00000001
+    ;mov ax, 0x0255 
+    ;shl eax, 16     ; eax = 0x00020000?
+    ;mov ah, 0x55
+    ;xor eax, eax
+    ;add ax, 0x55555   ; 21845 in decimal
+	;push eax
+
+    ;	sin_addr.s_addr = htonl(INADDR_ANY)
+    xor eax, eax
+    push eax
+	;	sin_family = AF_INET
+    ;xor eax, eax
+    push word 0x5555    ; 21845
+    push word 2
+    mov ecx, esp    ; pointer to our struct
 
 	; 361 bind(fd, sockaddr *, sizeof(sockaddr))
+    mov ax, 361    ; 361 = bind
+    ; fd set back on line 18
+    ; sockaddr * set back on line 31
+    xor edx, edx
+    mov dl, 16      ; sizeof(sockaddr) = 16
+    int 0x80
 
 	; 363 listen(fd, backlog)
 
