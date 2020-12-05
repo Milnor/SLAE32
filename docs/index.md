@@ -1,5 +1,7 @@
 ## WIP - Please Come Back Later! - SLAE<sup>32</sup> Blog
 
+All components of this project were developed and tested on a Lubuntu 16.04 (i686) virtual machine running in VirtualBox on a modern 64-bit host with an i7 CPU.
+
 ### Assignments
 
 - Bind Shell
