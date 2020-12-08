@@ -4,7 +4,10 @@
 
 ### What does a Bind Shell need to do?
 
-A high level overview of a Bind Shell is that it creates a socket, binds that socket to a port, listens for a connection, accepts a connect, then execs /bin/sh (or another shell) and duplicates STDIN, STDOUT, and STDERR to the file descriptor of the connected socket. One of my favorite resources for shellcoding is the tutorial series by Azeria Labs for exploitation on the ARM architecture. I outlined what my shellcode needed to accomplish by looking at Azeria's C version of a [bind shell](https://azeria-labs.com/tcp-bind-shell-in-assembly-arm-32-bit/):
+A high level overview of a Bind Shell is that it creates a socket, binds that
+socket to a port, listens for a connection, accepts a connect, then duplicates
+STDIN, STDOUT, and STDERR to the file descriptor of the connected socket, and
+finally execs /bin/sh (or another shell). One of my favorite resources for shellcoding is the tutorial series by Azeria Labs for exploitation on the ARM architecture. I outlined what my shellcode needed to accomplish by looking at Azeria's C version of a [bind shell](https://azeria-labs.com/tcp-bind-shell-in-assembly-arm-32-bit/):
 ```C
     // Create new TCP socket 
     host_sockid = socket(PF_INET, SOCK_STREAM, 0); 
@@ -51,7 +54,9 @@ I used a "Guess and Check" approach, writing assembly to build various permutati
 |0x02005555 | rsp       | AF\_INET, port 0x5555 |
 |0x00000000 | rsp + 4   | INADDR\_ANY           |
 
-This *seemed* right. When I compiled and ran ```printf("size = %d\n", sizeof(struct sockaddr));``` and saw the struct consisted of 16 bytes, I came to the conclusion that it should be built on the stack with exactly two 32-bit values, accounting for endianness and padding. Sadly, I got stuck at this juncture and looked for how someone else did it:
+This *seemed* right. However, when I compiled and ran ```printf("size = %d\n",
+sizeof(struct sockaddr));``` and saw the struct consisted of 16 bytes, that
+suggest *four* 32-bit (4 byte) values, not two. Sadly, I got stuck at this juncture and looked for how someone else did it:
 
 Another SLAE student [https://github.com/ricardojoserf/slae32/tree/master/a1_Shell_Bind_Tcp](https://github.com/ricardojoserf/slae32/tree/master/a1_Shell_Bind_Tcp)
 pushed first the IPv4 address, then the port number as a *word*, and lastly the *sin\_family* as a *word*.  
