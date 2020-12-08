@@ -48,8 +48,24 @@ _start:
     int 0x80
 
 	; 363 listen(fd, backlog)
-
+    xor eax, eax
+    mov ax, 363     ; 363 = listen
+    ; fd set in previous syscall
+    xor ecx, ecx
+    inc ecx         ; backlog of 1
+    int 0x80
+ 
 	; 364 accept(fd, NULL, NULL) --> conn_fd
+    xor eax, eax
+    mov ax, 364     ; 364 = accept
+    ; fd set in previous syscall
+    xor ecx, ecx    ; addr = NULL
+    xor edx, edx    ; addrlen = NULL
+    int 0x80
+    
+    ; temporarily stick accepted socket fd into exit return code 
+    ;  for testing
+    mov ebx, eax
 
 	; 63 dup2(conn_fd, 0-2)
 
@@ -60,5 +76,5 @@ _start:
     ; clean exit
 	xor eax, eax    
     inc al          ; 1 = exit
-    xor ebx, ebx    ; 0 = return SUCCESS
+    ;xor ebx, ebx    ; 0 = return SUCCESS
     int 0x80
