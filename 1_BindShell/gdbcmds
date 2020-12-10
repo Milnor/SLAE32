@@ -1,0 +1,11 @@
+# run like this: gdb -x gdbcmds ./my_shellcode
+# TODO: Is is possible to trim disass to fewer lines?
+# TODO: Is it possible to trim registers to just the usual ones?
+
+b _start
+set disassembly-flavor intel
+define hook-stop
+disass /r _start
+x/20xw $esp
+info reg
+end
