@@ -8,6 +8,13 @@
 - **eax** syscall number
 - **eax** retval
 - **arguments 1-6** - ebx, ecx, edx, esi, edi, ebp
+### Libc Instead of Syscalls
+- declare ```extern printf``` (or whatever functions you want) 
+- ```main``` instead of ```_start```
+- push arguments onto stack in *reverse* order
+- ```CALL printf```
+- align the stack after function call, e.g. ```add esp, 0x4```
+- link with **gcc** instead of **ld**
 
 ## Syscall Numbers
 
