@@ -1,13 +1,13 @@
-# WIP
+# WIP - Assignment 1 - Bind Shell
 
-## Assignment 1 - Bind Shell
+TODO: Intro to this article... assembly by hand, then writing a shellcode generator.
 
-### What does a Bind Shell need to do?
+## What does a Bind Shell need to do?
 
 A high level overview of a Bind Shell is that it creates a socket, binds that
 socket to a port, listens for a connection, accepts a connect, then duplicates
 STDIN, STDOUT, and STDERR to the file descriptor of the connected socket, and
-finally execs /bin/sh (or another shell). One of my favorite resources for shellcoding is the tutorial series by Azeria Labs for exploitation on the ARM architecture. I outlined what my shellcode needed to accomplish by looking at Azeria's C version of a [bind shell](https://azeria-labs.com/tcp-bind-shell-in-assembly-arm-32-bit/):
+finally execs /bin/sh (or another shell). One of my favorite free resources for shellcoding is the tutorial series by Azeria Labs for exploitation on the ARM architecture. I outlined what my shellcode needed to accomplish by looking at Azeria's C version of a [bind shell](https://azeria-labs.com/tcp-bind-shell-in-assembly-arm-32-bit/):
 ```C
     // Create new TCP socket 
     host_sockid = socket(PF_INET, SOCK_STREAM, 0); 
@@ -35,8 +35,10 @@ finally execs /bin/sh (or another shell). One of my favorite resources for shell
     execve("/bin/sh", NULL, NULL); 
     close(host_sockid);
 ```
+TODO: Say more about this.
 
-### The Process
+## First Approach: Writing Assembly by Hand
+
 Writing unobfuscated shellcode in x86 assembly is straightforward. It consists of moving the appropriate values into registers for a series of system calls. A quick ```man 2 syscall``` reveals the calling convention and Application Binary Interface (ABI). However, a few issues require some forethought: 
 1. Avoiding null bytes (0x00) or other bad characters if needed
     - XOR a register with itself to zero it out, e.g. ```xor eax, eax``` instead of ```mov eax, 0```
@@ -60,3 +62,23 @@ suggest *four* 32-bit (4 byte) values, not two. Sadly, I got stuck at this junct
 
 Another SLAE student [https://github.com/ricardojoserf/slae32/tree/master/a1_Shell_Bind_Tcp](https://github.com/ricardojoserf/slae32/tree/master/a1_Shell_Bind_Tcp)
 pushed first the IPv4 address, then the port number as a *word*, and lastly the *sin\_family* as a *word*.  
+
+TODO: draw a diagram of how it actually looked on the stack
+
+Creating the parameters to *execve* was simple. The important first parameter was to create the null-terminated string "/bin/sh\0". To obviate the need to pinpoint a specific byte for NULLing, I used the **extra slashes in paths** technique to pad the string to two 32-bit strings: "/bin" and "//sh". These I converted to hex values with Python:
+```
+Python 3.5.2 (default, Oct  7 2020, 17:19:02) 
+[GCC 5.4.0 20160609] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> code = "//sh"
+>>> rev = code[::-1]
+>>> rev.encode("utf-8").hex()
+'68732f2f'
+>>> code = "/bin"
+>>> rev = code[::-1]
+>>> rev.encode("utf-8").hex()
+'6e69622f'
+```
+
+## Second Approach: Shellcode Generator with Configurable Port Number
+
