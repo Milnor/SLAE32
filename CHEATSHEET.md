@@ -8,6 +8,13 @@
 - **eax** syscall number
 - **eax** retval
 - **arguments 1-6** - ebx, ecx, edx, esi, edi, ebp
+### Libc Instead of Syscalls
+- declare ```extern printf``` (or whatever functions you want) 
+- ```main``` instead of ```_start```
+- push arguments onto stack in *reverse* order
+- ```CALL printf```
+- align the stack after function call, e.g. ```add esp, 0x4```
+- link with **gcc** instead of **ld**
 
 ## Syscall Numbers
 
@@ -50,3 +57,38 @@
 | MACRO       | Definition                |
 | --------    | -------------             |
 | INADDR\_ANY | ((in\_addr\_t) 0x00000000)|
+
+## Compiling and Linking Shellcode
+
+### GCC flags
+- ```-fno-stack-protector```
+- ```-z execstack``` pass *execstack* keyword to linker
+
+## Working with Strings
+
+### Paths
+Extraneous slashes don't matter!
+- ```/bin/sh``` and ```//bin/sh```
+- This is convenient for padding to a particular byte boundary
+
+### Converting to Little Endian Hex Values
+- Python 3
+```
+>>> code = 'Hello, World!'
+>>> reversed = code[::-1]
+>>> print(reversed)
+!dlroW ,olleH
+>>> reversed.encode("utf-8").hex()
+'21646c726f57202c6f6c6c6548'
+```
+- Python 2
+```
+>>> code = 'Hi there :)'
+>>> reversed = code[::-1]
+>>> reversed.encode("hex")
+'293a206572656874206948'
+```
+
+## XOR Encoding/Decoding
+- XOR once with a value to encode; XOR again with the same value to decode
+- Note: Do not use a byte occurring in your code already as the XOR value or you will introduce NULL(s)
