@@ -33,7 +33,9 @@ fi
 
 cd build
 
-cmake .. && make
+cmake -DBUILD_WITH_COVERAGE=on .. && make
+
+#make lcov
 
 if [ $? -eq 0 ]; then
     echo '[+] Built shellcode generator.'
@@ -42,4 +44,10 @@ else
     exit -1
 fi
 
+lcov --zerocounters --directory .
+
 ./bindshell 2345    # Port is configurable
+
+lcov --directory . --capture --output-file coverage.info
+
+genhtml coverage.info --output-directory out
