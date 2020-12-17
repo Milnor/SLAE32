@@ -16,6 +16,7 @@
 
 #define REG_PORT_MIN    1024            // lowest registered port
 #define DEFAULT_PATH    "temp.nasm"
+#define SKIP_PARAM      -1              // omit parameter to syscall
 
 typedef enum {eax, ebx, ecx, edx, esp} reg32_t;
 
@@ -234,10 +235,18 @@ static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
         syscall, arg_ebx, arg_ecx, arg_edx);
 
     store_in_reg(syscall, eax);
-    store_in_reg(arg_ebx, ebx);
-    store_in_reg(arg_ecx, ecx);
-    store_in_reg(arg_edx, edx);
-    
+    if (arg_ebx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ebx, ebx);
+    }
+    if (arg_ecx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ecx, ecx);
+    }
+    if (arg_edx != SKIP_PARAM)
+    {
+        store_in_reg(arg_edx, edx);
+    }
     dprintf(temp_fd, "\tint 0x80\n\n"); 
 } 
 
@@ -291,6 +300,12 @@ int main(int argc, char * argv[])
 
     // stack pointer into ecx
     store_result(esp, ecx); 
+
+    // bind(fd, sockaddr *, sizeof(sockaddr))
+    build_syscall3(SYS_bind, SKIP_PARAM, SKIP_PARAM, sizeof(struct sockaddr));
+    /* fd was placed in ebx with store_result()
+     * sockaddr * was placed in ecx with store_result()
+     */
 
     if (close(temp_fd))
     {
