@@ -85,7 +85,6 @@ static void build_stackstring(const char * text)
         dprintf(temp_fd, "\tpush eax\t\t; %.*s\n\n",
             4, &(reversed[offset]));        
     }
-    
 
     free(reversed);
 }
@@ -394,6 +393,9 @@ int main(int argc, char * argv[])
     build_stackstring("This will fail");
 
     build_stackstring("/bin//sh");
+
+    // execve("/bin//sh", NULL, NULL)
+    build_syscall3(SYS_execve, SKIP_PARAM, 0, 0);
 
     if (close(temp_fd))
     {
