@@ -64,6 +64,15 @@
 - ```-fno-stack-protector```
 - ```-z execstack``` pass *execstack* keyword to linker
 
+## Carving hex strings from binary
+
+### Azeria's Method
+- ```objcopy -O binary bind_shell bind_shell.bin```
+- ```hexdump -v -e '"\\""x" 1/1 "%02x" ""' bind_shell.bin```
+
+### Vivek's Method
+- TODO: rewatch that video and add
+
 ## Working with Strings
 
 ### Paths
