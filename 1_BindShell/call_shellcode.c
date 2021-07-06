@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <string.h>
-#include "shellcode.h"
+
+#ifdef HARDCODED
+    #include "hardcoded.h"
+#endif /* HARDCODED */
+
+#ifdef CONFIGURABLE
+    #include "configurable.h"
+#endif /* CONFIGURABLE */
+
+// Shellcode 'code' is provided via a header file
 
 int main(int argc, char ** argv)
 {
