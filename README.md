@@ -2,6 +2,8 @@
 
 Student ID: SLAE - 1480
 
+![MarioSLAE32](https://user-images.githubusercontent.com/7789866/124338283-f222fa80-db74-11eb-80b2-f117391dc627.png)
+
 ## WIP
 - TODO: Blog :building_construction:
 - TODO: Exercises
