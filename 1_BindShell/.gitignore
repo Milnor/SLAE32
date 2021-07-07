@@ -1,2 +1,8 @@
+build/*
 hardcoded.h
 configurable.h
+bind_shell
+temp*
+*.bin
+*.o
+
