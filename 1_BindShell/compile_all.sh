@@ -3,6 +3,12 @@
 # First, build the non-configurable hand-coded shellcode
 ./compile.sh bind_shell
 
+# And dump its code into a header file
+objcopy -O binary bind_shell bind_shell.bin
+echo -en "char * code = \"" > hardcoded.h
+hexdump -v -e '"\\""x" 1/1 "%02x" ""' bind_shell.bin >> hardcoded.h
+echo -e "\";\n" >> hardcoded.h
+
 # Second, build the shellcode generator
 
 mkdir -p build
@@ -16,7 +22,8 @@ fi
 
 cd build
 
-cmake -DBUILD_WITH_COVERAGE=on .. && make
+#cmake -DBUILD_WITH_COVERAGE=on .. && make 
+cmake -DBUILD_WITH_COVERAGE=on .. && cmake --build . --target bindshell
 
 if [ $? -eq 0 ]; then
     echo '[+] Built shellcode generator.'
@@ -68,4 +75,19 @@ fi
 # Seventh, compile the machine-generated bind shell
 ../compile.sh temp
 
+# And dump its code to a header
+objcopy -O binary temp temp.bin
+echo -en "char * code = \"" > ../configurable.h
+hexdump -v -e '"\\""x" 1/1 "%02x" ""' temp.bin >> ../configurable.h
+echo -e "\";\n" >> ../configurable.h
 
+# Finally, with both headers generated, build code testers
+
+cmake --build . --target test1 && cmake --build . --target test2
+
+if [ $? -eq 0 ]; then
+    echo '[+] Built shellcode testers.'
+else
+    echo '[-] Failed to build shellcode testers'
+    exit -1
+fi

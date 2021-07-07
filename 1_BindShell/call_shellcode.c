@@ -13,7 +13,7 @@
 
 int main(int argc, char ** argv)
 {
-	printf("[+] Testing bind shell of %lu bytes\n", strlen(code));
+	printf("[+] Testing bind shell of %u bytes\n", strlen(code));
 
 	int (*ret)() = (int(*)())code;
 
