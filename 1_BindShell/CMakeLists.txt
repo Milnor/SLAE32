@@ -12,7 +12,7 @@ add_executable(test2 call_shellcode.c)
 
 # I like code coverage info
 set_target_properties(bindshell PROPERTIES 
-        COMPILE_FLAGS "--coverage"
+        COMPILE_FLAGS "--coverage -fno-stack-protector -z execstack"
         LINK_FLAGS "--coverage")
  
 target_compile_definitions(test1 PRIVATE HARDCODED)
