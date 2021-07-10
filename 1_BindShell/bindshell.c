@@ -133,6 +133,8 @@ static const char * enum2reg8hi(reg32_t reg)
         case edx:
             reg_name = "dh";
             break;
+        case esi:
+            reg_name = "si";
         default:
             reg_name = "ERR";
             fprintf(stderr, "[-] Unsupported register #%d\n", reg);
@@ -190,6 +192,9 @@ static const char * enum2reg16(reg32_t reg)
             break;
         case edx:
             reg_name = "dx";
+            break;
+        case esi:
+            reg_name = "si";
             break;
         default:
             reg_name = "ERR";
