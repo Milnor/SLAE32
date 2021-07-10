@@ -133,9 +133,8 @@ static const char * enum2reg8hi(reg32_t reg)
         case edx:
             reg_name = "dh";
             break;
-        case esi:
-            reg_name = "si";
         default:
+            // Including esi, which lacks a hi 8-bit equivalent
             reg_name = "ERR";
             fprintf(stderr, "[-] Unsupported register #%d\n", reg);
     }
@@ -167,6 +166,8 @@ static const char * enum2reg8lo(reg32_t reg)
         case edx:
             reg_name = "dl";
             break;
+        case esi:
+            reg_name = "sil";
         default:
             reg_name = "ERR";
             fprintf(stderr, "[-] Unsupported register #%d\n", reg);
@@ -351,6 +352,7 @@ static void build_syscall4(uint16_t syscall, uint32_t arg_ebx,
     }
     dprintf(temp_fd, "\tint 0x80\n\n"); 
 } 
+
 int main(int argc, char * argv[])
 {
     uint16_t port;
