@@ -43,12 +43,13 @@ _start:
     inc ecx         ; backlog of 1
     int 0x80
  
-	; 364 accept(fd, NULL, NULL) --> conn_fd
+	; 364 accept4(fd, NULL, NULL, 0) --> conn_fd
     xor eax, eax
-    mov ax, 364     ; 364 = accept
+    mov ax, 364     ; 202 = accept, not supported?
     ; fd set in previous syscall
     xor ecx, ecx    ; addr = NULL
     xor edx, edx    ; addrlen = NULL
+    xor esi, esi    ; flags = 0
     int 0x80
     
     ; pass connected fd as first arg of next syscall
