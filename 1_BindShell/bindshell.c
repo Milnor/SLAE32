@@ -58,15 +58,15 @@ static void build_stackstring(const char * text)
     }
     else if ((len % 4) != 0)
     {
-        fprintf(stderr, "[!] string length of %d not supported!\n"
-            "\t(Must be evenly divisible by 4.)\n", len);
+        fprintf(stderr, "[!] string length of %d (%s) not supported!\n"
+            "\t(Must be evenly divisible by 4.)\n", len, text);
         return;
     } 
 
     dprintf(temp_fd, "\txor eax, eax\n"
         "\tpush eax\t\t; NULL terminator\n\n");
 
-    
+#if 0    
     /* reverse the string for x86 Little Endianness */
     char * reversed = calloc((len + 1), sizeof(char));
     size_t i, j;
@@ -77,18 +77,21 @@ static void build_stackstring(const char * text)
         j--;
     }  
     //printf("[!] %s backwards is %s\n\n", text, reversed);
-    
-    for (size_t offset = 0; offset < len; offset += chunk)
+#endif    
+    for (ssize_t offset = (len - chunk); offset >= 0; offset -= chunk)
     {
+        printf("* offset = %d, len = %d, chunk = %d\n", offset, len, chunk);
         uint32_t current;
-        memcpy(&current, &(reversed[offset]), chunk);
+        memcpy(&current, &(text[offset]), chunk);
         
         store_in_reg(current, eax);
         dprintf(temp_fd, "\tpush eax\t\t; %.*s\n\n",
-            4, &(reversed[offset]));        
+            4, &(text[offset]));        
     }
 
-    free(reversed);
+
+
+    //free(reversed);
 }
 
 static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family)
