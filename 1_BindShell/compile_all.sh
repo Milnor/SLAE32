@@ -23,7 +23,7 @@ fi
 cd build
 
 #cmake -DBUILD_WITH_COVERAGE=on .. && make 
-cmake -DBUILD_WITH_COVERAGE=on .. && cmake --build . --target bindshell
+cmake -DBUILD_WITH_COVERAGE=on .. && cmake --build . --target turtle
 
 if [ $? -eq 0 ]; then
     echo '[+] Built shellcode generator.'
@@ -49,7 +49,7 @@ if [ $# -gt 0 ]; then
 fi
 
 # Fifth, let the generator write a bind shell for Nasm
-./bindshell $PORT       # port is configurable
+./turtle $PORT       # port is configurable
 
 # Sixth, generate HTML dashboard with code coverage statistics
 lcov --directory . --capture --output-file coverage.info
