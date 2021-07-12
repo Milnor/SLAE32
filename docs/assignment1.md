@@ -81,4 +81,5 @@ Type "help", "copyright", "credits" or "license" for more information.
 ```
 
 ## Second Approach: Shellcode Generator with Configurable Port Number
-
+TODO: talk about quirk with accept4 syscall, added flag param; syscall number
+for accept existed but it wasn't supported
