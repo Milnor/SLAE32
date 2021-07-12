@@ -8,7 +8,7 @@ Student ID: SLAE - 1480
 - TODO: Blog :building_construction:
 - TODO: Exercises
     1. TCP Bind Shell with configurable port number ✔️
-    2. TCP Reverse Shell with configurable IP/port
+    2. TCP Reverse Shell with configurable IP/port 🏗️
     3. Egghunter demo, configurable for different payloads
     4. Custom Encoder POC
     5. Analysis of 3 msfvenom payloads for x86
