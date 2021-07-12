@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(bindshells)
+project(bindshells VERSION "0.1.0")
 
 # Shellcode Generator
 add_executable(turtle turtle.c)
